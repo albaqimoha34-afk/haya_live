@@ -29,7 +29,8 @@ jobs:
         run: |
           FLUTTER_PATH=$(find /opt/hostedtoolcache/flutter -name "flutter.groovy" -path "*/gradle/*" | head -1)
           echo "Found: $FLUTTER_PATH"
-          sed -i '/^import groovy.xml.QName/d' "$FLUTTER_PATH"
+          sed -i 's|^import groovy.xml.QName$|import javax.xml.namespace.QName|' "$FLUTTER_PATH"
+          sed -i 's|new XmlParser()|new groovy.xml.XmlParser()|' "$FLUTTER_PATH"
           echo "Fixed!"
       
       - name: Get dependencies
