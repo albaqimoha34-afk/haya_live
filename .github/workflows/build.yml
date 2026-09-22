@@ -8,37 +8,34 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-      
+          cache: 'gradle'
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.29.3'
           channel: 'stable'
-      
-      - name: Fix Groovy issue
-        run: |
-          FLUTTER_PATH=$(find /opt/hostedtoolcache/flutter -name "flutter.groovy" -path "*/gradle/*" | head -1)
-          echo "Found: $FLUTTER_PATH"
-          sed -i 's|^import groovy.xml.QName$|import javax.xml.namespace.QName|' "$FLUTTER_PATH"
-          sed -i 's|new XmlParser()|new groovy.xml.XmlParser()|' "$FLUTTER_PATH"
-          echo "Fixed!"
-      
+          cache: true
+
+      - name: Flutter Doctor
+        run: flutter doctor -v
+
       - name: Get dependencies
         run: flutter pub get
-      
+
       - name: Build APK
         run: flutter build apk --release
-      
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
