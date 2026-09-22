@@ -22,23 +22,26 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.27.1'
           channel: 'stable'
       
-      - name: Fix Groovy issue
+      - name: Fix Gradle issue
         run: |
-          FLUTTER_PATH=$(find /opt/hostedtoolcache/flutter -name "flutter.groovy" -path "*/gradle/*" | head -1)
-          echo "Found: $FLUTTER_PATH"
-          sed -i 's|^import groovy.xml.QName$|import javax.xml.namespace.QName|' "$FLUTTER_PATH"
-          sed -i 's|new XmlParser()|new groovy.xml.XmlParser()|' "$FLUTTER_PATH"
-          echo "=== Verification ==="
-          grep -n "QName\|XmlParser" "$FLUTTER_PATH" | head -5
+          GRADLE_FILE="android/build.gradle.kts"
+          if [ -f "$GRADLE_FILE" ]; then
+            sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 34/' "$GRADLE_FILE"
+          fi
+          
+          GRADLE_APP="android/app/build.gradle.kts"
+          if [ -f "$GRADLE_APP" ]; then
+            sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 34/' "$GRADLE_APP"
+          fi
       
       - name: Get dependencies
         run: flutter pub get
       
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-tree-shake-icons
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
